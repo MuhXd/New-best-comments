@@ -18,14 +18,15 @@ void setvalue() {
 	if (Best < per) {
 	Best = per;
 	name = "";
-	}
-}
+	};
+};
+
 class $modify(PlayerObject){
 	void playerDestroyed(bool p0){
 
 		PlayerObject::playerDestroyed(p0);
 
-		setvalue()
+		setvalue();
 		
 	}
 };
@@ -50,8 +51,8 @@ class $modify(PlayLayer) {
                 
             
                 if (percent > (m_level->m_normalPercent)) {
-                    per = percent
-					name = m_level->m_levelName
+                    per = percent;
+					name = m_level->m_levelName;
                 } 
             }
 	}
