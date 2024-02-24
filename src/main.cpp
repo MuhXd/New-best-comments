@@ -7,11 +7,11 @@ using namespace geode::prelude;
 #include <Geode/modify/PlayLayer.hpp>
 int per =0;
 int Best = 0;
-auto name = "test";
+auto levelname;
 void uploadNewBest() {
    auto manager = GameLevelManager::sharedState();
    manager->uploadAccountComment("New Best on " << (levelname) << " and got " << (Best) << " %");
-   name = "";
+   levelname = "";
    Best = 0;
 }
 void setvalue() {
@@ -48,11 +48,10 @@ class $modify(PlayLayer) {
                 }
                
                 float percent = static_cast<float>(PlayLayer::getCurrentPercentInt());
-                
+                levelname = m_level->m_levelName;
             
                 if (percent > (m_level->m_normalPercent)) {
                     per = percent;
-					name = m_level->m_levelName;
                 } 
             }
 	}
