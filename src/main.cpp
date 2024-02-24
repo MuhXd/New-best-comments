@@ -47,7 +47,7 @@ class $modify(PlayLayer) {
                 }
                
                 float percent = static_cast<float>(PlayLayer::getCurrentPercentInt());
-                levelname = std::string(m_level->m_levelName) 
+                levelname = std::string(m_level->m_levelName);
             
                 if (percent > (m_level->m_normalPercent)) {
                     per = percent;
