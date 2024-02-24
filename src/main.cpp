@@ -17,7 +17,6 @@ void uploadNewBest() {
 void setvalue() {
 	if (Best < per) {
 	Best = per;
-	name = "";
 	};
 };
 
