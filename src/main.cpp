@@ -10,7 +10,7 @@ int Best = 0;
 auto levelname = std::string("a");
 void uploadNewBest() {
    auto manager = GameLevelManager::sharedState();
-   manager->uploadAccountComment(std::string("New Best on ") + std::string(levelname) + std::string(" and got ") + std::string(Best) + std::string(" %"));
+   manager->uploadAccountComment(std::string("New Best on ") + std::string(levelname) + std::string(" and got ") + (Best) + std::string(" %"));
    levelname = std::string("a");
    Best = 0;
 }
