@@ -7,7 +7,7 @@ using namespace geode::prelude;
 #include <Geode/modify/PlayLayer.hpp>
 int per =0;
 int Best = 0;
-auto levelname;
+auto levelname = "";
 void uploadNewBest() {
    auto manager = GameLevelManager::sharedState();
    manager->uploadAccountComment("New Best on " << (levelname) << " and got " << (Best) << " %");
