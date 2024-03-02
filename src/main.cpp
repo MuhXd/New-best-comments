@@ -1,10 +1,12 @@
 #include <Geode/Geode.hpp>
 
 using namespace geode::prelude;
-
+#include <Geode/ui/Notification.hpp>
 #include <Geode/modify/PlayerObject.hpp>
 #include <Geode/binding/PlayerObject.hpp>
 #include <Geode/modify/PlayLayer.hpp>
+#include <Geode/binding/PauseLayer.hpp>
+#include <Geode/modify/PauseLayer.hpp>
 int per =0;
 int Best = 0;
 auto levelname = std::string("PlaceHolder");
@@ -13,9 +15,15 @@ void uploadNewBest() {
    if (Best > 0) {
     if (Best >= 100) {
               manager->uploadAccountComment(fmt::format("I Beat {}",levelname));
+			   if (Mod::get()->getSettingValue<bool>("Notify")) {
+			  		Notification::create(fmt::format("Commented: I Beat {}",levelname),NotificationIcon::Success,2.5)->show();
+			   }
     }
     else {
               manager->uploadAccountComment(fmt::format("Got new best on {} ({}%)",levelname,Best));
+			 if (Mod::get()->getSettingValue<bool>("Notify")) {
+				 Notification::create(fmt::format("Commented: I Beat {} ({}%)",levelname,Best),NotificationIcon::Success, 2.5)->show();
+			 }
     }
    };
    levelname = "PlaceHolder";
@@ -196,14 +204,21 @@ class $modify(PlayerObject){
         };
 	}
 };
+class $modify(PauseLayer) {
+	void onQuit(CCObject* sender) {
+		PauseLayer::onQuit(sender);
+		uploadNewBest();
+	};
+	void onEdit(CCObject* sender) {
+		PauseLayer::onEdit(sender);
+		uploadNewBest();
+	};
+};
+
 class $modify(PlayLayer) {
 	void levelComplete() {
 		PlayLayer::levelComplete();
 		setvalue(PlayLayer::get()->m_level,100);
-	}
-	void onExit() {
-		uploadNewBest();
-        PlayLayer::onExit();
 	}
     void updateProgressbar() {
         PlayLayer::updateProgressbar();
