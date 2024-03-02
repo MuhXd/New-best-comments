@@ -5,5 +5,25 @@
 	"id": "viper.new_best_comment",
 	"name": "New best comment",
 	"developer": "Viper",
+	"settings": {
+		"Death": {
+			"name": "Always on death",
+			"description": "Sends a comment if you die and got a new best",
+			"type": "bool",
+			"default": false
+		},
+		"difficulty": {
+			"name": "Min comment level difficulty",
+			"description": "Change what levels can be commented on your profile",
+			"type": "int",
+			"default": 0,
+			"min": 0,
+			"max": 17,
+			"control": {
+				"arrows": true,
+				"slider": false
+			}
+		}
+	},
 	"description": "Comments on your profile your new best on a level"
 }
