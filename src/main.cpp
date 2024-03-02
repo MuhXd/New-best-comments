@@ -131,7 +131,10 @@ int convertGJDifficultyToAssetKey(int difficulty) {
 	return 0;
 }
 auto getAverageDifficulty(GJGameLevel* level) {
-	return level->m_ratings / level->m_ratingsSum;
+    if (level->m_ratings && level->m_ratingsSum) {
+	    return level->m_ratings / level->m_ratingsSum;
+    };
+    return 0;
 }
 
 int convertGJDifficultyDemonToAssetKey(int difficulty) {
@@ -151,7 +154,7 @@ int convertGJDifficultyDemonToAssetKey(int difficulty) {
 }
 int getratingsnumbs(GJGameLevel* level) {
     int stars = level->m_stars.value();
-	auto difficulty = level->getAverageDifficulty();
+	float difficulty = getAverageDifficulty(level);
     if (level->m_levelID.value() < 128 || level->m_levelID.value() == 3001) {
 		return convertRobTopLevelToAssetKey(level->m_levelID.value());
 	}
