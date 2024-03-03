@@ -4,11 +4,17 @@
 		"win": "2.204",
 		"android": "2.205"
 	},
-	"version": "v1.0.2",
+	"version": "v1.0.3",
 	"id": "viper.newbestcomments",
 	"name": "New best comment",
 	"developer": "Viper",
 	"settings": {
+		"ID": {
+			"name": "ID",
+			"description": "It Sends the id when sending the comment",
+			"type": "bool",
+			"default": false
+		},
 		"Death": {
 			"name": "Always on death",
 			"description": "Sends a comment if you die and got a new best",
@@ -27,7 +33,7 @@
 			"type": "int",
 			"default": 0,
 			"min": 0,
-			"max": 17,
+			"max": 14,
 			"control": {
 				"arrows": true,
 				"slider": false

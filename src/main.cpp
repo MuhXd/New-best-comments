@@ -7,24 +7,38 @@ using namespace geode::prelude;
 #include <Geode/modify/PlayLayer.hpp>
 #include <Geode/binding/PauseLayer.hpp>
 #include <Geode/modify/PauseLayer.hpp>
+#include <Geode/modify/EndLevelLayer.hpp>
 int per =0;
 int Best = 0;
+int id = 1;
 auto levelname = std::string("PlaceHolder");
+std::string Msg() {
+    if (Best >= 100) {
+		if (Mod::get()->getSettingValue<bool>("ID")) {
+			return fmt::format("I Beat {} (ID: {})",levelname,id);
+		   }
+		   else {
+			return fmt::format("I Beat {}",levelname);
+		   }
+	}
+	else {
+		 if (Mod::get()->getSettingValue<bool>("ID")) {
+			return fmt::format("Got new best on {} ({}%) (ID: {})",levelname,Best,id);
+		 }
+		else {
+			return fmt::format("Got new best on {} ({}%)",levelname,Best);
+		}
+	};
+};
+
 void uploadNewBest() {
    auto manager = GameLevelManager::sharedState();
    if (Best > 0) {
-    if (Best >= 100) {
-              manager->uploadAccountComment(fmt::format("I Beat {}",levelname));
+				auto Send = Msg();
+				manager->uploadAccountComment(fmt::format("{}",Send));
 			   if (Mod::get()->getSettingValue<bool>("Notify")) {
-			  		Notification::create(fmt::format("Commented: I Beat {}",levelname),NotificationIcon::Success,2.5)->show();
+			  		Notification::create(fmt::format("Commented: {}",Send),NotificationIcon::Success,2.5)->show();
 			   }
-    }
-    else {
-              manager->uploadAccountComment(fmt::format("Got new best on {} ({}%)",levelname,Best));
-			 if (Mod::get()->getSettingValue<bool>("Notify")) {
-				 Notification::create(fmt::format("Commented: I Beat {} ({}%)",levelname,Best),NotificationIcon::Success, 2.5)->show();
-			 }
-    }
    };
    levelname = "PlaceHolder";
    Best = 0;
@@ -60,7 +74,7 @@ int convertRobTopLevelToAssetKey(int lvlID) {
 		case 13:
 			return 5; // Electroman Adventures
 		case 14:
-			return 13; // Clubstep
+			return 12; // Clubstep
 		case 15:
 			return 9; // Electrodynamix
 		case 16:
@@ -68,17 +82,17 @@ int convertRobTopLevelToAssetKey(int lvlID) {
 		case 17:
 			return 4; // Blast Processing
 		case 18:
-			return 13; // TOE 2
+			return 12; // TOE 2
 		case 19:
 			return 5; // Geometrical Dominator
 		case 20:
-			return 13; // Deadlocked
+			return 12; // Deadlocked
 		case 21:
 			return 9; // Fingerdash
 		case 22:
 			return 9; // Dash
 		case 23:
-			return 13; // Explorers
+			return 12; // Explorers
 		case 3001:
 			return 5; // The Challenge
 		// Spinoffs
@@ -148,15 +162,15 @@ auto getAverageDifficulty(GJGameLevel* level) {
 int convertGJDifficultyDemonToAssetKey(int difficulty) {
 	switch (difficulty) {
 		case 3:
-			return 13;
+			return 10;
 		case 4:
-			return 14;
+			return 11;
 		case 0:
-			return 15;
+			return 12;
 		case 5:
-			return 16;
+			return 13;
 		case 6:
-			return 17;
+			return 14;
 	}
 	return 0;
 }
@@ -191,6 +205,7 @@ void setvalue(GJGameLevel* level, int overrightper) {
 	if (Best < persentlook) {
         if (dif(level)) {
             Best = persentlook;
+			id = level->m_levelID.value();
         }
 	};
 }
@@ -198,10 +213,12 @@ class $modify(PlayerObject){
 	void playerDestroyed(bool p0){
 
 		PlayerObject::playerDestroyed(p0);
-		setvalue(PlayLayer::get()->m_level,per);
-		if (Mod::get()->getSettingValue<bool>("Death")) {
-            uploadNewBest();
-        };
+		if (GameManager::sharedState()->getPlayLayer() ) {
+			setvalue(PlayLayer::get()->m_level,per);
+				if (Mod::get()->getSettingValue<bool>("Death")) {
+            		uploadNewBest();
+        		};
+		}
 	}
 };
 class $modify(PauseLayer) {
@@ -211,6 +228,16 @@ class $modify(PauseLayer) {
 	};
 	void onEdit(CCObject* sender) {
 		PauseLayer::onEdit(sender);
+		uploadNewBest();
+	};
+};
+class $modify(EndLevelLayer) {
+	void onMenu(CCObject* sender) {
+		EndLevelLayer::onMenu(sender);
+		uploadNewBest();
+	};
+	void onEdit(CCObject* sender) {
+		EndLevelLayer::onEdit(sender);
 		uploadNewBest();
 	};
 };
