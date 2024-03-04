@@ -33,7 +33,7 @@ std::string Msg() {
 
 void uploadNewBest() {
    auto manager = GameLevelManager::sharedState();
-   if (Best > 0) {
+   if (Best > 0 && Mod::get()->getSettingValue<bool>("Enabled")) {
 				auto Send = Msg();
 				manager->uploadAccountComment(fmt::format("{}",Send));
 			   if (Mod::get()->getSettingValue<bool>("Notify")) {
@@ -195,7 +195,13 @@ bool dif(GJGameLevel* level) {
     };
         return false;
 };
-
+bool Rated(GJGameLevel* level) {
+	log::debug("Rate",level->m_rateFeature);
+	if (level->m_isEpic) || (level->m_featured) {
+		return true;
+	};
+	return false;
+}
 void setvalue(GJGameLevel* level, int overrightper) {
     int persentlook = overrightper;
     if (level==nullptr) {
@@ -204,6 +210,9 @@ void setvalue(GJGameLevel* level, int overrightper) {
     };
 	if (Best < persentlook) {
         if (dif(level)) {
+			if (Rated(level)) {
+				log::debug("yay")
+			};
             Best = persentlook;
 			id = level->m_levelID.value();
         }

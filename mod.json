@@ -9,6 +9,12 @@
 	"name": "New best comment",
 	"developer": "Viper",
 	"settings": {
+		"Enabled": {
+			"name": "Enabled Mod",
+			"description": "Enable the mod",
+			"type": "bool",
+			"default": false
+		},
 		"ID": {
 			"name": "ID",
 			"description": "It Sends the id when sending the comment",
