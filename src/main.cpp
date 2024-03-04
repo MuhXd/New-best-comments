@@ -10,6 +10,7 @@ using namespace geode::prelude;
 #include <Geode/modify/EndLevelLayer.hpp>
 int per =0;
 int Best = 0;
+bool cleardata = false;
 GJGameLevel* m_levelb = nullptr;
 bool pract = false;
 int id = 1;
@@ -242,7 +243,7 @@ void setvalue(GJGameLevel* level, int overrightper, float startpos) {
     if (level==nullptr) {
         log::debug("Caught Crash: Level: {} \n Per : {}",level,per);
         return; 
-    };
+    }; 
 	 if ( startpos > 0) {
 		auto calprac = calPrac(startpos,persentlook);
 			if (calPracSaved(level) < calprac ) {
@@ -270,7 +271,12 @@ class $modify(PlayerObject){
 		auto keep = CurrentAttempRespawn;
 		PlayerObject::playerDestroyed(p0);
 		if (GameManager::sharedState()->getPlayLayer() ) {
-			setvalue(PlayLayer::get()->m_level,per,keep);
+			auto lvl = PlayLayer::get()->m_level;
+			if (lvl->m_practicePercent == 0) {
+				Mod::get()->setSavedValue(fmt::format("StartPosB_S{}",lvl->m_levelID.value()), 0);
+				Mod::get()->setSavedValue(fmt::format("StartPosB_E{}",lvl->m_levelID.value()), 0);
+			};
+			setvalue(lvl,per,keep);
 				if (Mod::get()->getSettingValue<bool>("Death")) {
             		uploadNewBest();
         		}
@@ -326,8 +332,9 @@ class $modify(PlayLayer) {
 		//log::debug("Spawned at {}",CurrentAttempRespawn);
 	};
 };
-// GJ_closeBtn_001
 
+// GJ_closeBtn_001
+/*
 class $modify(customLayer,PauseLayer) {
   void Remove(CCObject*) {
      geode::createQuickPopup(
@@ -364,3 +371,4 @@ class $modify(customLayer,PauseLayer) {
 	  menu->updateLayout();
     }
 };
+*/
