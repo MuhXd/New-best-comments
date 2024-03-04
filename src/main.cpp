@@ -197,7 +197,7 @@ bool dif(GJGameLevel* level) {
 };
 bool Rated(GJGameLevel* level) {
 	log::debug("Rate",level->m_rateFeature);
-	if (level->m_isEpic) || (level->m_featured) {
+	if (level->m_isEpic || level->m_featured) {
 		return true;
 	};
 	return false;
@@ -211,7 +211,7 @@ void setvalue(GJGameLevel* level, int overrightper) {
 	if (Best < persentlook) {
         if (dif(level)) {
 			if (Rated(level)) {
-				log::debug("yay")
+				log::debug("yay");
 			};
             Best = persentlook;
 			id = level->m_levelID.value();
