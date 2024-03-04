@@ -8,12 +8,19 @@
 	"id": "viper.newbestcomments",
 	"name": "New best comment",
 	"developer": "Viper",
+	"dependencies": [
+        {
+            "id": "geode.node-ids",
+            "version": ">=v1.6.1",
+            "importance": "required"
+        }
+    ],
 	"settings": {
 		"Enabled": {
 			"name": "Enabled Mod",
 			"description": "Enable the mod",
 			"type": "bool",
-			"default": false
+			"default": true
 		},
 		"ID": {
 			"name": "ID",
@@ -33,6 +40,18 @@
 			"type": "bool",
 			"default": false
 		},
+		"ratedlevels": {
+			"name": "only rated levels",
+			"description": "Sends a comment if level is rated only",
+			"type": "bool",
+			"default": false
+		},
+		"unlisted": {
+			"name": "allow unlisted levels",
+			"description": "allows sending comments in level is unlisted",
+			"type": "bool",
+			"default": false
+		},
 		"difficulty": {
 			"name": "Min comment level difficulty",
 			"description": "Change what levels can be commented on your profile",
@@ -40,6 +59,18 @@
 			"default": 0,
 			"min": 0,
 			"max": 14,
+			"control": {
+				"arrows": true,
+				"slider": false
+			}
+		},
+		"PracticeOffset": {
+			"name": "Practice Death Offset",
+			"description": "Change the % offset that can comment for example if set to 30 then\n 6-10 will not be sent but 50-100 will \nthis is because 10-6 = 4 and 4 is less then 30!",
+			"type": "int",
+			"default": 15,
+			"min": 0,
+			"max": 100,
 			"control": {
 				"arrows": true,
 				"slider": false

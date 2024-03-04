@@ -10,26 +10,34 @@ using namespace geode::prelude;
 #include <Geode/modify/EndLevelLayer.hpp>
 int per =0;
 int Best = 0;
+GJGameLevel* m_levelb = nullptr;
+bool pract = false;
 int id = 1;
+int respawn = 0;
+float CurrentAttempRespawn = 0;
 auto levelname = std::string("PlaceHolder");
+
+std::string ID() {
+		if (Mod::get()->getSettingValue<bool>("ID")) {
+			return fmt::format("(ID: {})",id);
+		};
+		return "";
+};
+
 std::string Msg() {
     if (Best >= 100) {
-		if (Mod::get()->getSettingValue<bool>("ID")) {
-			return fmt::format("I Beat {} (ID: {})",levelname,id);
-		   }
-		   else {
-			return fmt::format("I Beat {}",levelname);
-		   }
+		if (respawn > 0) {
+			return fmt::format("I Beat {} from {}% {}",levelname,respawn,ID());
+		}
+			return fmt::format("I Beat {} {}",levelname,ID());
 	}
 	else {
-		 if (Mod::get()->getSettingValue<bool>("ID")) {
-			return fmt::format("Got new best on {} ({}%) (ID: {})",levelname,Best,id);
-		 }
-		else {
-			return fmt::format("Got new best on {} ({}%)",levelname,Best);
+		if (respawn > 0) {
+			return fmt::format("I Got {}-{}% on {} {}",respawn,Best,levelname,ID());
+		}
+			return fmt::format("I Got a best on {} ({}%) {}",levelname,Best,ID());
 		}
 	};
-};
 
 void uploadNewBest() {
    auto manager = GameLevelManager::sharedState();
@@ -42,6 +50,7 @@ void uploadNewBest() {
    };
    levelname = "PlaceHolder";
    Best = 0;
+   respawn=0;
    per= 0; 
 }
 
@@ -195,40 +204,79 @@ bool dif(GJGameLevel* level) {
     };
         return false;
 };
+
 bool Rated(GJGameLevel* level) {
-	log::debug("Rate",level->m_rateFeature);
-	if (level->m_isEpic || level->m_featured) {
+	
+	if (level->m_isEpic || level->m_featured || !Mod::get()->getSettingValue<int64_t>("ratedlevels")) {
 		return true;
 	};
 	return false;
+};
+
+bool unlisted(GJGameLevel* level) {
+	if (level->m_unlisted && !Mod::get()->getSettingValue<int64_t>("unlisted")) {
+		return true;
+	};
+	return false;
+};
+
+bool ifs(GJGameLevel* level) {
+	  if (dif(level)) {
+			if (Rated(level)) {
+				if (!unlisted(level) ) {
+					return true;
+				};
+			};
+	  };
+	return false;
 }
-void setvalue(GJGameLevel* level, int overrightper) {
+float calPracSaved(GJGameLevel* level) {
+	return Mod::get()->getSavedValue<float>(fmt::format("StartPosB_E{}",level->m_levelID.value())) - Mod::get()->getSavedValue<float>(fmt::format("StartPosB_S{}",level->m_levelID.value()));
+}
+float calPrac(float current, float persentlook) {
+	return (persentlook - current);
+}
+
+void setvalue(GJGameLevel* level, int overrightper, float startpos) {
     int persentlook = overrightper;
     if (level==nullptr) {
         log::debug("Caught Crash: Level: {} \n Per : {}",level,per);
         return; 
     };
+	 if ( startpos > 0) {
+		auto calprac = calPrac(startpos,persentlook);
+			if (calPracSaved(level) < calprac ) {
+				if (Mod::get()->getSettingValue<int64_t>("PracticeOffset") < calprac) {
+					Mod::get()->setSavedValue(fmt::format("StartPosB_S{}",level->m_levelID.value()), startpos);
+					Mod::get()->setSavedValue(fmt::format("StartPosB_E{}",level->m_levelID.value()), persentlook);
+					Best = persentlook;
+					respawn=startpos;
+					id = level->m_levelID.value();
+				}	
+			}
+		return;
+	 };
 	if (Best < persentlook) {
-        if (dif(level)) {
-			if (Rated(level)) {
-				log::debug("yay");
-			};
-            Best = persentlook;
-			id = level->m_levelID.value();
+        if (ifs(level)) {
+			Best = persentlook;
+			respawn=0;
+			id = level->m_levelID.value();	
         }
 	};
 }
+
 class $modify(PlayerObject){
 	void playerDestroyed(bool p0){
-
+		auto keep = CurrentAttempRespawn;
 		PlayerObject::playerDestroyed(p0);
 		if (GameManager::sharedState()->getPlayLayer() ) {
-			setvalue(PlayLayer::get()->m_level,per);
+			setvalue(PlayLayer::get()->m_level,per,keep);
 				if (Mod::get()->getSettingValue<bool>("Death")) {
             		uploadNewBest();
-        		};
-		}
-	}
+        		}
+	};
+		 };
+		
 };
 class $modify(PauseLayer) {
 	void onQuit(CCObject* sender) {
@@ -254,22 +302,65 @@ class $modify(EndLevelLayer) {
 class $modify(PlayLayer) {
 	void levelComplete() {
 		PlayLayer::levelComplete();
-		setvalue(PlayLayer::get()->m_level,100);
-	}
+		setvalue(PlayLayer::get()->m_level,100,CurrentAttempRespawn);
+	};
     void updateProgressbar() {
         PlayLayer::updateProgressbar();
+		levelname = std::string(m_level->m_levelName);
             if (!m_level->isPlatformer()) {
-                if ( m_isPracticeMode) {
+			float percent = static_cast<float>(PlayLayer::getCurrentPercentInt());
+                if (m_isPracticeMode && !CurrentAttempRespawn == 0) {
+					pract=true;
+                    per = percent;
                     return;
-                }
-               
-                float percent = static_cast<float>(PlayLayer::getCurrentPercentInt());
-                levelname = std::string(m_level->m_levelName);
-            
+                };
+				pract = false;
                 if (percent > (m_level->m_normalPercent)) {
                     per = percent;
                 } 
             }
-	}
+	};
+	void resetLevel() {
+		PlayLayer::resetLevel();
+		CurrentAttempRespawn = PlayLayer::getCurrentPercent();
+		//log::debug("Spawned at {}",CurrentAttempRespawn);
+	};
+};
+// GJ_closeBtn_001
 
+class $modify(customLayer,PauseLayer) {
+  void Remove(CCObject*) {
+     geode::createQuickPopup(
+			"New best comment",
+			"Are you sure you want to <cr>Remove StartPos Data</c>?",
+			"Cancel", "Yes",
+			[](auto, bool btn2) {
+				if (btn2) {
+					if (GameManager::sharedState()->getPlayLayer() ) {
+						id =  PlayLayer::get()->m_level->m_levelID.value();
+						Mod::get()->setSavedValue(fmt::format("StartPosB_S{}",id), 0);
+						Mod::get()->setSavedValue(fmt::format("StartPosB_E{}",id), 0);
+					};
+				}
+			}
+		)->show();
+  };
+
+  void customSetup() {
+    PauseLayer::customSetup();
+    auto menu = this->getChildByID("left-button-menu");
+    auto winSize = CCDirector::sharedDirector()->getWinSize();
+    auto spr = CCSprite::create("GJ_closeBtn_001.png");
+    
+	auto btn = CCMenuItemSpriteExtra::create(
+        spr,
+        this,
+        menu_selector(customLayer::Remove)
+      );
+	  
+      btn->setPosition({menu->getContentSize().width/2, btn->getContentSize().height/2});
+      btn->setID("RemoveStartPosData"_spr);
+      menu->addChild(btn);
+	  menu->updateLayout();
+    }
 };
