@@ -260,13 +260,15 @@ void setvalue(GJGameLevel* level, int overrightper, float startpos) {
     }; 
 	 if (startpos > 0) {
 		auto calprac = calPrac(startpos,persentlook);
-			if (calPracSaved(level) < calprac ) {
+			if (calPracSaved(level) < calprac  ) {
 				if (Mod::get()->getSettingValue<int64_t>("PracticeOffset") < calprac) {
 					Mod::get()->setSavedValue(fmt::format("StartPosB_S{}",level->m_levelID.value()), startpos);
 					Mod::get()->setSavedValue(fmt::format("StartPosB_E{}",level->m_levelID.value()), persentlook);
-					Best = persentlook;
-					respawn=startpos;
-					id = level->m_levelID.value();
+					if (level->m_normalPercent != 100) {
+						Best = persentlook;
+						respawn=startpos;
+						id = level->m_levelID.value();
+					}
 				}	
 			}
 		return;
@@ -387,9 +389,13 @@ class $modify(customLayer,PauseLayer) {
         log::debug("Caught Crash item: {}",menu);
         return; 
     }; 
+	
     btn->setPosition({menu->getContentSize().width/2, btn->getContentSize().height/2});
 	if (GameManager::sharedState()->getPlayLayer() ) {
 			id =  PlayLayer::get()->m_level->m_levelID.value();
+			if (PlayLayer::get()->m_level->isPlatformer()) {
+				return; // nothing for it yet!
+			}
 			weed = CCLabelBMFont::create(SetUpdate().c_str(), "goldFont.fnt");
 			weed->setOpacity(75);
 			weed->setAnchorPoint(ccp(0.0f,0.5f));
