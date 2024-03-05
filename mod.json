@@ -41,13 +41,13 @@
 			"default": false
 		},
 		"ratedlevels": {
-			"name": "only rated levels",
+			"name": "Only rated levels",
 			"description": "Sends a comment if level is rated only",
 			"type": "bool",
 			"default": false
 		},
 		"unlisted": {
-			"name": "allow unlisted levels",
+			"name": "Allow unlisted levels",
 			"description": "allows sending comments in level is unlisted",
 			"type": "bool",
 			"default": false
@@ -65,8 +65,8 @@
 			}
 		},
 		"PracticeOffset": {
-			"name": "Practice Death Offset",
-			"description": "Change the % offset that can comment for example if set to 30 then\n 6-10 will not be sent but 50-100 will \nthis is because 10-6 = 4 and 4 is less then 30!",
+			"name": "Practice Death Threshold",
+			"description": "Change the percentage threshold necessary to make a profile comment.\n<cg>Example</c>: 6-10% will not meet the threshold, but 50-100% will.\n(10 - 6 = 4, 100 - 50 = 50) \n<cg>Thanks RayDeeUx!</c>",
 			"type": "int",
 			"default": 15,
 			"min": 0,

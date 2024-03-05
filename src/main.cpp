@@ -8,6 +8,12 @@ using namespace geode::prelude;
 #include <Geode/binding/PauseLayer.hpp>
 #include <Geode/modify/PauseLayer.hpp>
 #include <Geode/modify/EndLevelLayer.hpp>
+#include <chrono>
+#include <thread>
+#include <queue>
+#include <string>
+#include <sstream>
+#include <iostream>
 int per =0;
 int Best = 0;
 bool cleardata = false;
@@ -257,7 +263,7 @@ void setvalue(GJGameLevel* level, int overrightper, float startpos) {
 			}
 		return;
 	 };
-	if (Best < persentlook) {
+	if (Best < persentlook && level->m_normalPercent == persentlook) {
         if (ifs(level)) {
 			Best = persentlook;
 			respawn=0;
@@ -334,7 +340,7 @@ class $modify(PlayLayer) {
 };
 
 // GJ_closeBtn_001
-/*
+
 class $modify(customLayer,PauseLayer) {
   void Remove(CCObject*) {
      geode::createQuickPopup(
@@ -347,28 +353,48 @@ class $modify(customLayer,PauseLayer) {
 						id =  PlayLayer::get()->m_level->m_levelID.value();
 						Mod::get()->setSavedValue(fmt::format("StartPosB_S{}",id), 0);
 						Mod::get()->setSavedValue(fmt::format("StartPosB_E{}",id), 0);
+						Best = 0;
+  						 respawn=0;
 					};
 				}
 			}
-		)->show();
-  };
+		);
+  }
 
   void customSetup() {
     PauseLayer::customSetup();
+	NodeIDs::provideFor(this);
     auto menu = this->getChildByID("left-button-menu");
     auto winSize = CCDirector::sharedDirector()->getWinSize();
-    auto spr = CCSprite::create("GJ_closeBtn_001.png");
+    auto spr = CCSprite::createWithSpriteFrameName("GJ_closeBtn_001.png");
     
+
 	auto btn = CCMenuItemSpriteExtra::create(
         spr,
         this,
         menu_selector(customLayer::Remove)
       );
-	  
-      btn->setPosition({menu->getContentSize().width/2, btn->getContentSize().height/2});
-      btn->setID("RemoveStartPosData"_spr);
+	if (!menu) {
+        log::debug("Caught Crash item: {}",menu);
+        return; 
+    }; 
+    btn->setPosition({menu->getContentSize().width/2, btn->getContentSize().height/2});
+	if (GameManager::sharedState()->getPlayLayer() ) {
+		id =  PlayLayer::get()->m_level->m_levelID.value();
+		if (calPracSaved(PlayLayer::get()->m_level) > 0) {
+			auto a = Mod::get()->getSavedValue<std::string>(fmt::format("StartPosB_S{}",id));
+			auto b = Mod::get()->getSavedValue<std::string>(fmt::format("StartPosB_E{}",id));
+			auto weed = CCLabelBMFont::create(fmt::format("Practice Best Saved: {}-{}",a,b).c_str(), "chatFont.fnt");
+			weed->setOpacity(60);
+			weed->setAnchorPoint(ccp(0.0f,0.5f));
+			weed->setPosition(winSize/2 + ccp(-winSize.width/2, -winSize.height/2) + ccp(3, 6));
+			weed->setScale(0.5f);	
+			weed->setID("practice-saved"_spr); // weed_spr
+			this->addChild(weed);
+		};
+	}
+	btn->setID("remove-startpos-menu"_spr);
       menu->addChild(btn);
 	  menu->updateLayout();
     }
 };
-*/
