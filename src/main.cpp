@@ -21,6 +21,8 @@ GJGameLevel* m_levelb = nullptr;
 bool pract = false;
 int id = 1;
 int respawn = 0;
+auto weed = CCLabelBMFont::create("", "goldFont.fnt");
+float old = 0;
 float CurrentAttempRespawn = 0;
 auto levelname = std::string("PlaceHolder");
 
@@ -29,6 +31,12 @@ std::string ID() {
 			return fmt::format("(ID: {})",id);
 		};
 		return "";
+};
+
+std::string SetUpdate() {
+	auto a = Mod::get()->getSavedValue<int>(fmt::format("StartPosB_S{}",id));
+	auto b = Mod::get()->getSavedValue<int>(fmt::format("StartPosB_E{}",id));
+	return fmt::format("Practice Best Saved: {}-{}%",a,b);
 };
 
 std::string Msg() {
@@ -250,7 +258,7 @@ void setvalue(GJGameLevel* level, int overrightper, float startpos) {
         log::debug("Caught Crash: Level: {} \n Per : {}",level,per);
         return; 
     }; 
-	 if ( startpos > 0) {
+	 if (startpos > 0) {
 		auto calprac = calPrac(startpos,persentlook);
 			if (calPracSaved(level) < calprac ) {
 				if (Mod::get()->getSettingValue<int64_t>("PracticeOffset") < calprac) {
@@ -263,7 +271,7 @@ void setvalue(GJGameLevel* level, int overrightper, float startpos) {
 			}
 		return;
 	 };
-	if (Best < persentlook && level->m_normalPercent == persentlook) {
+	if (Best < persentlook) {
         if (ifs(level)) {
 			Best = persentlook;
 			respawn=0;
@@ -342,7 +350,7 @@ class $modify(PlayLayer) {
 // GJ_closeBtn_001
 
 class $modify(customLayer,PauseLayer) {
-  void Remove(CCObject*) {
+  void Remove(CCObject* po) {
      geode::createQuickPopup(
 			"New best comment",
 			"Are you sure you want to <cr>Remove StartPos Data</c>?",
@@ -353,8 +361,9 @@ class $modify(customLayer,PauseLayer) {
 						id =  PlayLayer::get()->m_level->m_levelID.value();
 						Mod::get()->setSavedValue(fmt::format("StartPosB_S{}",id), 0);
 						Mod::get()->setSavedValue(fmt::format("StartPosB_E{}",id), 0);
+						weed->setString(SetUpdate().c_str());
 						Best = 0;
-  						 respawn=0;
+  						respawn=0;
 					};
 				}
 			}
@@ -380,18 +389,14 @@ class $modify(customLayer,PauseLayer) {
     }; 
     btn->setPosition({menu->getContentSize().width/2, btn->getContentSize().height/2});
 	if (GameManager::sharedState()->getPlayLayer() ) {
-		id =  PlayLayer::get()->m_level->m_levelID.value();
-		if (calPracSaved(PlayLayer::get()->m_level) > 0) {
-			auto a = Mod::get()->getSavedValue<std::string>(fmt::format("StartPosB_S{}",id));
-			auto b = Mod::get()->getSavedValue<std::string>(fmt::format("StartPosB_E{}",id));
-			auto weed = CCLabelBMFont::create(fmt::format("Practice Best Saved: {}-{}",a,b).c_str(), "chatFont.fnt");
-			weed->setOpacity(60);
+			id =  PlayLayer::get()->m_level->m_levelID.value();
+			weed = CCLabelBMFont::create(SetUpdate().c_str(), "goldFont.fnt");
+			weed->setOpacity(75);
 			weed->setAnchorPoint(ccp(0.0f,0.5f));
 			weed->setPosition(winSize/2 + ccp(-winSize.width/2, -winSize.height/2) + ccp(3, 6));
 			weed->setScale(0.5f);	
 			weed->setID("practice-saved"_spr); // weed_spr
 			this->addChild(weed);
-		};
 	}
 	btn->setID("remove-startpos-menu"_spr);
       menu->addChild(btn);
